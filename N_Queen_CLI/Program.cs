@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace N_Queen_CLI
 {
@@ -6,7 +7,12 @@ namespace N_Queen_CLI
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Console.WriteLine("How many queens to you want to place?");
+            int queenNum = int.Parse(Console.ReadLine());
+            NQueenSolver solver = new NQueenSolver(queenNum);
+            solver.Setup();
+            solver.PrintBoard();
+            solver.PrintStats();
         }
     }
 }
