@@ -148,28 +148,29 @@ namespace N_Queen_CLI
             Random milRand = new Random();
             while (!m_IsSolved)
             {
-                //int maxConflictQueen = 0;
-                //int maxConflictCount = CalculateConflicts(0);
-                //for (int i = 1; i < m_Columns.Length; i++)
-                //{
-                //    int newMaxConflictCount = CalculateConflicts(i);
+                int maxConflictQueen = 0;
+                int maxConflictCount = CalculateExistingConflicts(m_Columns[0], 0);
+                for (int i = 1; i < m_Columns.Length; i++)
+                {
+                    int newMaxConflictCount = CalculateExistingConflicts(m_Columns[i], i);
 
-                //    if (newMaxConflictCount > maxConflictCount)
-                //    {
-                //        maxConflictCount = newMaxConflictCount;
-                //        maxConflictQueen = i;
-                //    }
-                //}
+                    if (newMaxConflictCount > maxConflictCount)
+                    {
+                        maxConflictCount = newMaxConflictCount;
+                        maxConflictQueen = i;
+                    }
+                }
 
                 //Iterate through columns
-                int randQueen = milRand.Next(0, m_QueenNum);
+                //int randQueen = milRand.Next(0, m_QueenNum);
+                int randQueen = maxConflictQueen;
                 //Console.WriteLine($"Max conflict queen {randQueen}");
                 //Console.WriteLine($"Moving queen {randQueen}");
-                int queenConflict = CalculateConflicts(randQueen);
+                int queenConflict = CalculateExistingConflicts(m_Columns[randQueen], randQueen);
 
                 if (queenConflict != 0)
                 {
-                    int newMinConflictRow = FindMinConflictRow(queenConflict, m_Columns[randQueen]);
+                    int newMinConflictRow = FindMinConflictPosition(queenConflict, m_Columns[randQueen], randQueen);
                     if (newMinConflictRow != m_Columns[randQueen])
                     {
                         MoveQueen(randQueen, newMinConflictRow);
@@ -178,16 +179,16 @@ namespace N_Queen_CLI
                     m_IsSolved = true;
                     for (int i = 0; i < m_Columns.Length; i++)
                     {
-                        int currentQueenConflictCount = CalculateConflicts(i);
+                        int currentQueenConflictCount = CalculatePotentialConflicts(m_Columns[i], i);
 
-                        
+
                         if (currentQueenConflictCount > 0)
                         {
                             m_IsSolved = false;
                         }
                     }
                 }
-               
+
             }
 
             sw.Stop();
@@ -215,7 +216,7 @@ namespace N_Queen_CLI
         public void RemoveQueenFromMainDiagonal(int row, int column)
         {
             int index = FindMainDiagonalIndex(row, column);
-            m_MainDiagonal[index]--;
+            m_MainDiagonal[index - 1]--;
         }
 
         public void RemoveQueenFromSecondaryDiagonal(int row, int column)
@@ -237,7 +238,7 @@ namespace N_Queen_CLI
         {
             int diff = row - column;
             int index = m_QueenNum - diff;
-            return index;
+            return index - 1;
         }
 
         public int FindSecondDiagonal(int row, int column)
@@ -246,43 +247,58 @@ namespace N_Queen_CLI
             return index;
         }
 
-        public int CalculateConflicts(int columnArrayIndex)
+        public int CalculatePotentialConflicts(int rowArrayIndex, int columnArrayIndex)
         {
-            int mainDiagIndex = FindMainDiagonalIndex(m_Columns[columnArrayIndex], columnArrayIndex);
-            int secondaryDiagIndex = FindSecondDiagonal(m_Columns[columnArrayIndex], columnArrayIndex);
+            int mainDiagIndex = FindMainDiagonalIndex(rowArrayIndex, columnArrayIndex);
+            int secondaryDiagIndex = FindSecondDiagonal(rowArrayIndex, columnArrayIndex);
 
-            int rowConflicts = m_Rows[m_Columns[columnArrayIndex]];
-            if (rowConflicts == 1)
-            {
-                rowConflicts = 0;
-            }
+            int rowConflicts = m_Rows[rowArrayIndex];
 
             int mainDiagConflicts = m_MainDiagonal[mainDiagIndex];
-            if (mainDiagConflicts == 1)
-            {
-                mainDiagConflicts = 0;
-            }
 
             int secondaryDiagConflicts = m_SecondaryDiagonal[secondaryDiagIndex];
-            if (secondaryDiagConflicts == 1)
-            {
-                secondaryDiagConflicts = 0;
-            }
+
             return rowConflicts + mainDiagConflicts + secondaryDiagConflicts;
         }
 
-        public int FindMinConflictRow(int currentConflictCount, int currentRow)
+        public int CalculateExistingConflicts(int rowArrayIndex, int columnArrayIndex)
         {
-            int newMinConflictRow = 0;
+            int mainDiagIndex = FindMainDiagonalIndex(rowArrayIndex, columnArrayIndex);
+            int secondaryDiagIndex = FindSecondDiagonal(rowArrayIndex, columnArrayIndex);
+
+            int rowConflicts = m_Rows[rowArrayIndex] - 1;
+
+            int mainDiagConflicts = m_MainDiagonal[mainDiagIndex] - 1;
+
+            int secondaryDiagConflicts = m_SecondaryDiagonal[secondaryDiagIndex] - 1;
+
+            return rowConflicts + mainDiagConflicts + secondaryDiagConflicts;
+        }
+
+        public int FindMinConflictPosition(int currentConflictCount, int currentRow, int currentColumn)
+        {
+            int newMinConflictPos = 0;
             int newMinConflictCount = currentConflictCount;
 
             for (int i = 0; i < m_Rows.Length; i++)
             {
-                int rowConflicts = m_Rows[i];
-                if (rowConflicts < newMinConflictCount)
+                int posConflicts;
+                if (i == currentRow)
                 {
-                    newMinConflictCount = rowConflicts;
-                    newMinConflictRow = i;
+                    posConflicts = CalculateExistingConflicts(i, currentColumn);
+                }
+                else
+                {
+                    posConflicts = CalculatePotentialConflicts(i, currentColumn);
+                }
+
+                if (posConflicts <= newMinConflictCount)
+                {
+                    newMinConflictCount = posConflicts;
+                    if (i != currentRow)
+                    {
+                        newMinConflictPos = i;
+                    }
                 }
 
                 if (newMinConflictCount == 0)
@@ -291,14 +307,7 @@ namespace N_Queen_CLI
                 }
             }
 
-            if (newMinConflictCount == currentConflictCount)
-            {
-                return currentRow;
-            }
-
-            return newMinConflictRow;
-
-
+            return newMinConflictPos;
         }
 
         public void MoveQueen(int columnIndex, int newRow)
