@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,11 +15,13 @@ namespace N_Queen_CLI
         private int[] m_MainDiagonal;
         private int[] m_SecondaryDiagonal;
         private int m_TotalMoves = 0;
-
-        public NQueenSolver(int queenNum)
+        private bool m_IsSolved;
+        private int m_MaxSteps = 0;
+        public NQueenSolver(int queenNum, int maxSteps)
         {
 
             m_QueenNum = queenNum;
+            m_MaxSteps = maxSteps;
             int diagCount = (queenNum * 2) + 1;
             m_Columns = new int[queenNum];
             m_Rows = new int[queenNum];
@@ -33,15 +36,42 @@ namespace N_Queen_CLI
 
         public void Setup()
         {
-            Random rand = new Random(42);
-            for (int i = 0; i < m_Columns.Length - 1; i++)
+            int startRow = 0;
+            int numberOfPlacedQueens = 0;
+            bool onOdd = true;
+            while (numberOfPlacedQueens < m_QueenNum)
             {
-                int row = rand.Next(0, m_QueenNum - 1);
-                m_Columns[i] = row;
-                AddQueenToRow(row);
-                AddQueenToMainDiagonal(row, i);
-                AddQueenToSecondaryDiagonal(row, i);
+                for (int i = 0; i < m_Columns.Length; i++)
+                {
+                    if (onOdd)
+                    {
+                        if (i % 2 != 0)
+                        {
+                            m_Columns[i] = startRow;
+                            AddQueenToRow(startRow);
+                            AddQueenToMainDiagonal(startRow, i);
+                            AddQueenToSecondaryDiagonal(startRow, i);
+                            startRow++;
+                            numberOfPlacedQueens++;
+                        }
+                    }
+                    else
+                    {
+                        if (i % 2 == 0)
+                        {
+                            m_Columns[i] = startRow;
+                            AddQueenToRow(startRow);
+                            AddQueenToMainDiagonal(startRow, i);
+                            AddQueenToSecondaryDiagonal(startRow, i);
+                            startRow++;
+                            numberOfPlacedQueens++;
+                        }
+                    }
+                }
+
+                onOdd = !onOdd;
             }
+
         }
 
         public void PrintBoard()
@@ -95,32 +125,67 @@ namespace N_Queen_CLI
 
         }
 
-
-
         public void Solve()
         {
-            //Iterate through columns
-            for (int i = 0; i < m_Columns.Length; i++)
+            Console.WriteLine("Starting search.");
+            Stopwatch sw = new Stopwatch();
+            Console.WriteLine("Starting stopwatch.");
+            sw.Start();
+            Random milRand = new Random();
+            while (!m_IsSolved)
             {
-                int currentQueenConflictCount = CalculateConflicts(i);
 
 
-                if (currentQueenConflictCount > 0)
+                m_IsSolved = true;
+
+                //int maxConflictQueen = 0;
+                //int maxConflictCount = CalculateConflicts(0);
+                //for (int i = 1; i < m_Columns.Length; i++)
+                //{
+                //    int newMaxConflictCount = CalculateConflicts(i);
+
+                //    if (newMaxConflictCount > maxConflictCount)
+                //    {
+                //        maxConflictCount = newMaxConflictCount;
+                //        maxConflictQueen = i;
+                //    }
+                //}
+
+                //Iterate through columns
+                int randQueen = milRand.Next(0, m_QueenNum);
+                //Console.WriteLine($"Max conflict queen {randQueen}");
+                //Console.WriteLine($"Moving queen {randQueen}");
+                int queenConflict = CalculateConflicts(randQueen);
+
+                if (queenConflict != 0)
                 {
-
-
-                    if (minConflictRow != m_Columns[i])
+                    int newMinConflictRow = FindMinConflictRow(queenConflict, m_Columns[randQueen]);
+                    if (newMinConflictRow != m_Columns[randQueen])
                     {
-                        m_Columns[i] = minConflictRow;
+                        MoveQueen(randQueen, newMinConflictRow);
                         m_TotalMoves += 1;
                     }
                 }
 
-                //Check # of queens that are on the row
-                //Get main diagonal
-                //Get secondary diagonal
-                //Calculate conflicts on both diagonals
+                for (int i = 0; i < m_Columns.Length; i++)
+                {
+                    int currentQueenConflictCount = CalculateConflicts(i);
+
+
+                    if (currentQueenConflictCount > 0)
+                    {
+                        m_IsSolved = false;
+                    }
+                }
             }
+
+            sw.Stop();
+            if (m_TotalMoves >= m_MaxSteps)
+            {
+                Console.WriteLine("Failed to eliminate conflicts within the given max steps.");
+            }
+            Console.WriteLine($"Number of moves required: {m_TotalMoves}");
+            Console.WriteLine($"Elapsed time:{sw.Elapsed}");
         }
 
 
@@ -152,7 +217,7 @@ namespace N_Queen_CLI
         {
             m_Rows[row]++;
         }
-        public void RemoveQueenToRow(int row)
+        public void RemoveQueenFromRow(int row)
         {
             m_Rows[row]--;
         }
@@ -176,14 +241,62 @@ namespace N_Queen_CLI
             int secondaryDiagIndex = FindSecondDiagonal(m_Columns[columnArrayIndex], columnArrayIndex);
 
             int rowConflicts = m_Rows[m_Columns[columnArrayIndex]];
+            if (rowConflicts == 1)
+            {
+                rowConflicts = 0;
+            }
+
             int mainDiagConflicts = m_MainDiagonal[mainDiagIndex];
-            int secondaryDiagConflicts = m_SecondaryDiagonal[mainDiagConflicts];
+            if (mainDiagConflicts == 1)
+            {
+                mainDiagConflicts = 0;
+            }
+
+            int secondaryDiagConflicts = m_SecondaryDiagonal[secondaryDiagIndex];
+            if (secondaryDiagConflicts == 1)
+            {
+                secondaryDiagConflicts = 0;
+            }
             return rowConflicts + mainDiagConflicts + secondaryDiagConflicts;
+        }
+
+        public int FindMinConflictRow(int currentConflictCount, int currentRow)
+        {
+            int newMinConflictRow = 0;
+            int newMinConflictCount = currentConflictCount;
+
+            for (int i = 0; i < m_Rows.Length; i++)
+            {
+                int rowConflicts = m_Rows[i];
+                if (rowConflicts < newMinConflictCount)
+                {
+                    newMinConflictCount = rowConflicts;
+                    newMinConflictRow = i;
+                }
+            }
+
+            if (newMinConflictCount == currentConflictCount)
+            {
+                return currentRow;
+            }
+
+            return newMinConflictRow;
+
+
         }
 
         public void MoveQueen(int columnIndex, int newRow)
         {
+            int oldRow = m_Columns[columnIndex];
+            m_Columns[columnIndex] = newRow;
 
+            RemoveQueenFromRow(oldRow);
+            RemoveQueenFromMainDiagonal(oldRow, columnIndex);
+            RemoveQueenFromSecondaryDiagonal(oldRow, columnIndex);
+
+            AddQueenToRow(newRow);
+            AddQueenToMainDiagonal(newRow, columnIndex);
+            AddQueenToSecondaryDiagonal(newRow, columnIndex);
         }
     }
 }
