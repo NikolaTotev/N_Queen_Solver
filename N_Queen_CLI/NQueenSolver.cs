@@ -14,7 +14,7 @@ namespace N_Queen_CLI
         private int[] m_Rows;
         private int[] m_MainDiagonal;
         private int[] m_SecondaryDiagonal;
-        private int m_TotalMoves = 0;
+        private long m_TotalMoves = 0;
         private bool m_IsSolved;
         private int m_MaxSteps = 0;
         public NQueenSolver(int queenNum, int maxSteps)
@@ -165,18 +165,19 @@ namespace N_Queen_CLI
                         MoveQueen(randQueen, newMinConflictRow);
                         m_TotalMoves += 1;
                     }
-                }
 
-                for (int i = 0; i < m_Columns.Length; i++)
-                {
-                    int currentQueenConflictCount = CalculateConflicts(i);
-
-
-                    if (currentQueenConflictCount > 0)
+                    for (int i = 0; i < m_Columns.Length; i++)
                     {
-                        m_IsSolved = false;
+                        int currentQueenConflictCount = CalculateConflicts(i);
+
+
+                        if (currentQueenConflictCount > 0)
+                        {
+                            m_IsSolved = false;
+                        }
                     }
                 }
+               
             }
 
             sw.Stop();
@@ -272,6 +273,11 @@ namespace N_Queen_CLI
                 {
                     newMinConflictCount = rowConflicts;
                     newMinConflictRow = i;
+                }
+
+                if (newMinConflictCount == 0)
+                {
+                    break;
                 }
             }
 
