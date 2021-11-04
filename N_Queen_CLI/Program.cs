@@ -21,7 +21,7 @@ namespace N_Queen_CLI
 
 
 
-                solver.Setup();
+                solver.HorsePatternSetup();
                 if (drawFlag == "Y")
                 {
                     solver.PrintBoard();

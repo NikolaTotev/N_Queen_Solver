@@ -15,8 +15,9 @@ namespace N_Queen_CLI
         private int[] m_MainDiagonal;
         private int[] m_SecondaryDiagonal;
         private long m_TotalMoves = 0;
-        private bool m_IsSolved;
+        private bool m_IsSolved = false;
         private int m_MaxSteps = 0;
+
         public NQueenSolver(int queenNum, int maxSteps)
         {
 
@@ -34,7 +35,7 @@ namespace N_Queen_CLI
             Array.Clear(m_SecondaryDiagonal, 0, m_SecondaryDiagonal.Length);
         }
 
-        public void Setup()
+        public void HorsePatternSetup()
         {
             int startRow = 0;
             int numberOfPlacedQueens = 0;
@@ -72,6 +73,19 @@ namespace N_Queen_CLI
                 onOdd = !onOdd;
             }
 
+        }
+
+        public void RandomSetup()
+        {
+            Random rand = new Random();
+            for (int i = 0; i < m_Columns.Length - 1; i++)
+            {
+                int row = rand.Next(0, m_QueenNum - 1);
+                m_Columns[i] = row;
+                AddQueenToRow(row);
+                AddQueenToMainDiagonal(row, i);
+                AddQueenToSecondaryDiagonal(row, i);
+            }
         }
 
         public void PrintBoard()
@@ -134,10 +148,6 @@ namespace N_Queen_CLI
             Random milRand = new Random();
             while (!m_IsSolved)
             {
-
-
-                m_IsSolved = true;
-
                 //int maxConflictQueen = 0;
                 //int maxConflictCount = CalculateConflicts(0);
                 //for (int i = 1; i < m_Columns.Length; i++)
@@ -165,12 +175,12 @@ namespace N_Queen_CLI
                         MoveQueen(randQueen, newMinConflictRow);
                         m_TotalMoves += 1;
                     }
-
+                    m_IsSolved = true;
                     for (int i = 0; i < m_Columns.Length; i++)
                     {
                         int currentQueenConflictCount = CalculateConflicts(i);
 
-
+                        
                         if (currentQueenConflictCount > 0)
                         {
                             m_IsSolved = false;
