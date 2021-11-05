@@ -146,26 +146,50 @@ namespace N_Queen_CLI
             Console.WriteLine("Starting stopwatch.");
             sw.Start();
             Random milRand = new Random();
+            List<int> maxIndexes = new List<int>();
+
             while (!m_IsSolved)
             {
-                int maxConflictQueen = 0;
-                int maxConflictCount = CalculateExistingConflicts(m_Columns[0], 0);
-                for (int i = 1; i < m_Columns.Length; i++)
-                {
-                    int newMaxConflictCount = CalculateExistingConflicts(m_Columns[i], i);
+                //Clear previous max conflict indexes.
+                maxIndexes.Clear();
 
-                    if (newMaxConflictCount > maxConflictCount)
+                Dictionary<int, int> queenConflictPairs = new Dictionary<int, int>();
+
+                for (int i = 0; i < m_Columns.Length; i++)
+                {
+                    int conflictCount = CalculateExistingConflicts(m_Columns[i], i);
+
+                    queenConflictPairs.Add(i, conflictCount);
+                }
+
+
+                var items = from pair in queenConflictPairs
+                    orderby pair.Value ascending
+                    select pair;
+
+                KeyValuePair<int,int> maxConflict = items.Last();
+                
+                foreach (KeyValuePair<int, int> pair in items)
+                {
+                    if (pair.Value == maxConflict.Value)
                     {
-                        maxConflictCount = newMaxConflictCount;
-                        maxConflictQueen = i;
+                        maxIndexes.Add(pair.Key);
                     }
                 }
 
-                //Iterate through columns
-                //int randQueen = milRand.Next(0, m_QueenNum);
+
+                int maxConflictQueen;
+
+                if (maxIndexes.Count > 1)
+                {
+                    maxConflictQueen = maxIndexes[milRand.Next(0, maxIndexes.Count)];
+                }
+                else
+                {
+                    maxConflictQueen = maxIndexes[0];
+                }
+
                 int randQueen = maxConflictQueen;
-                //Console.WriteLine($"Max conflict queen {randQueen}");
-                //Console.WriteLine($"Moving queen {randQueen}");
                 int queenConflict = CalculateExistingConflicts(m_Columns[randQueen], randQueen);
 
                 if (queenConflict != 0)
@@ -216,7 +240,7 @@ namespace N_Queen_CLI
         public void RemoveQueenFromMainDiagonal(int row, int column)
         {
             int index = FindMainDiagonalIndex(row, column);
-            m_MainDiagonal[index - 1]--;
+            m_MainDiagonal[index]--;
         }
 
         public void RemoveQueenFromSecondaryDiagonal(int row, int column)
@@ -232,6 +256,7 @@ namespace N_Queen_CLI
         public void RemoveQueenFromRow(int row)
         {
             m_Rows[row]--;
+
         }
 
         public int FindMainDiagonalIndex(int row, int column)
