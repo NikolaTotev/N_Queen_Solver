@@ -4,6 +4,7 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace N_Queen_CLI
@@ -150,7 +151,7 @@ namespace N_Queen_CLI
 
             //Create instance of Random class to be used in queen selection
             Random milRand = new Random();
-            
+
             //Create a list to hold all column indexes that have a maximum number of conflicts
             List<int> maxIndexes = new List<int>();
 
@@ -172,12 +173,12 @@ namespace N_Queen_CLI
 
                 //Order the dictionary by value
                 var items = from pair in queenConflictPairs
-                    orderby pair.Value ascending
-                    select pair;
+                            orderby pair.Value ascending
+                            select pair;
 
                 //Extract the last value from the items variable, this should be the maximum number of conflicts
-                KeyValuePair<int,int> maxConflict = items.Last();
-                
+                KeyValuePair<int, int> maxConflict = items.Last();
+
                 //Iterate through the items variable to check if there are any other indexes that have the same max number of conflicts
                 foreach (KeyValuePair<int, int> pair in items)
                 {
@@ -187,7 +188,7 @@ namespace N_Queen_CLI
                         maxIndexes.Add(pair.Key);
                     }
                 }
-                
+
                 int maxConflictQueen;
 
                 //If there is more than one index in the maxIndexes list, a random index is selected from the list. 
@@ -200,19 +201,23 @@ namespace N_Queen_CLI
                 {
                     maxConflictQueen = maxIndexes[0];
                 }
-                
+
                 //Assign max conflict queen index. This is for easy of editing.
                 int randQueen = maxConflictQueen;
+                int prevPosition = m_Columns[randQueen]; //For debugging purposes
+
+                int newRow = 0;
 
                 //Get the queen conflict, again used for eas of editing.
                 int queenConflict = CalculateExistingConflicts(m_Columns[randQueen], randQueen);
-
+                int prevConflicts = -1; //For debugging purposes.
                 //The the chosen queen has conflicts we try to move it to a row with the least amount of conflicts
                 if (queenConflict != 0)
                 {
+                    prevConflicts = queenConflict;
                     //Find min conflict position in the array.
                     int newMinConflictRow = FindMinConflictPosition(queenConflict, m_Columns[randQueen], randQueen);
-
+                    newRow = newMinConflictRow;
                     //This might be a redundant check considering there is a similar one in the FindMinConflictPosition function.
                     if (newMinConflictRow != m_Columns[randQueen])
                     {
@@ -238,17 +243,26 @@ namespace N_Queen_CLI
                     }
                 }
 
+                m_IsSolved = queenConflict == 0;
+
+                //PrintBoard();
+                //Console.WriteLine("====================================================================");
+                //Console.WriteLine($"Moved {randQueen} from {prevPosition} to {newRow} because it had {prevConflicts}");
+                //Console.WriteLine("====================================================================");
+                //Console.WriteLine("====================================================================");
+                //Thread.Sleep(1000);
+
             }
 
             //Stop the stopwatch right after the algorithm has found a solution
             sw.Stop();
-            
+
             //Redundant check that uses a max steps variable
             if (m_TotalMoves >= m_MaxSteps)
             {
                 Console.WriteLine("Failed to eliminate conflicts within the given max steps.");
             }
-            
+
             //Print the stats for the solution.
             Console.WriteLine($"Number of moves required: {m_TotalMoves}");
             Console.WriteLine($"Elapsed time:{sw.Elapsed}");
