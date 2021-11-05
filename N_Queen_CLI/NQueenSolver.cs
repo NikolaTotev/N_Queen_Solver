@@ -19,12 +19,13 @@ namespace N_Queen_CLI
         private long m_TotalMoves = 0;
         private bool m_IsSolved = false;
         private int m_MaxSteps = 0;
-
-        public NQueenSolver(int queenNum, int maxSteps)
+        private bool m_Debug;
+        public NQueenSolver(int queenNum, int maxSteps, bool debug)
         {
 
             m_QueenNum = queenNum;
             m_MaxSteps = maxSteps;
+            m_Debug = debug;
             int diagCount = (queenNum * 2) + 1;
             m_Columns = new int[queenNum];
             m_Rows = new int[queenNum];
@@ -77,6 +78,21 @@ namespace N_Queen_CLI
 
         }
 
+        public void MinConflictSetup()
+        {
+            int numberOfPlacedQueens = 0;
+    
+            for (int i = 0; i < m_Columns.Length - 1; i++)
+            {
+                int row = FindMinConflictPosition(numberOfPlacedQueens, -1, i);
+                m_Columns[i] = row;
+                AddQueenToRow(row);
+                AddQueenToMainDiagonal(row, i);
+                AddQueenToSecondaryDiagonal(row, i);
+                numberOfPlacedQueens++;
+            }
+        }
+
         public void RandomSetup()
         {
             Random rand = new Random();
@@ -98,11 +114,11 @@ namespace N_Queen_CLI
                 {
                     if (m_Columns[j] == i)
                     {
-                        Console.Write("Q");
+                        Console.Write("O|");
                     }
                     else
                     {
-                        Console.Write("-");
+                        Console.Write("-|");
                     }
                 }
                 Console.WriteLine();
@@ -141,7 +157,7 @@ namespace N_Queen_CLI
 
         }
 
-        public void Solve()
+        public int Solve()
         {
             //Initialize and Start stopwatch for timing purposes
             Console.WriteLine("Starting search.");
@@ -241,31 +257,34 @@ namespace N_Queen_CLI
                             m_IsSolved = false;
                         }
                     }
+
+                    if (sw.Elapsed.Seconds > 20)
+                    {
+                        return -1;
+                    }
                 }
 
                 m_IsSolved = queenConflict == 0;
 
-                //PrintBoard();
-                //Console.WriteLine("====================================================================");
-                //Console.WriteLine($"Moved {randQueen} from {prevPosition} to {newRow} because it had {prevConflicts}");
-                //Console.WriteLine("====================================================================");
-                //Console.WriteLine("====================================================================");
-                //Thread.Sleep(1000);
+                if (m_Debug)
+                {
+                    PrintBoard();
+                    Console.WriteLine("====================================================================");
+                    Console.WriteLine($"Moved {randQueen} from {prevPosition} to {newRow} because it had {prevConflicts}");
+                    Console.WriteLine("====================================================================");
+                    Console.WriteLine("====================================================================");
+                    Thread.Sleep(1000); 
+                }
 
             }
 
             //Stop the stopwatch right after the algorithm has found a solution
             sw.Stop();
 
-            //Redundant check that uses a max steps variable
-            if (m_TotalMoves >= m_MaxSteps)
-            {
-                Console.WriteLine("Failed to eliminate conflicts within the given max steps.");
-            }
-
             //Print the stats for the solution.
             Console.WriteLine($"Number of moves required: {m_TotalMoves}");
             Console.WriteLine($"Elapsed time:{sw.Elapsed}");
+            return 0;
         }
 
         public void AddQueenToMainDiagonal(int row, int column)
