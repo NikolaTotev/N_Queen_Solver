@@ -34,48 +34,74 @@
 
 <div class="root-grid">
 
-    <div class="puzzle-container">
-        <div class="puzzle-grid">
-
-            @if (isInitialized || solutionReady)
-            {
-
-
-                for (int i = 0; i < solver.m_Rows.Length; i++)
+    <div class="before-after">
+        <div class="puzzle-container">
+            <h1>Before Removing Conflicts</h1>
+            <div class="puzzle-grid">
+                @if (isInitialized || solutionReady)
                 {
-                    for (int j = 0; j < solver.m_Columns.Length; j++)
+                    for (int i = 0; i < solver.m_Rows.Length; i++)
                     {
-                        if (solver.m_Columns[j] == i)
+                        for (int j = 0; j < solver.m_ColumnsBefore.Length; j++)
                         {
+                            if (solver.m_ColumnsBefore[j] == i)
+                            {
 
-                            <div class="puzzle-element">Q</div>
+                                <div class="puzzle-element-before">Q</div>
 
-                        }
-                        else
-                        {
-                            <div>
-                                <div class="puzzle-element">-</div>
-                            </div>
+                            }
+                            else
+                            {
+                                <div>
+                                    <div class="puzzle-element-before">-</div>
+                                </div>
+                            }
                         }
                     }
-                    Console.WriteLine();
                 }
-            }
+            </div>
         </div>
 
-    </div>
+        <div class="puzzle-container">
+            <h1>After Removing Conflicts</h1>
+            <div class="puzzle-grid">
+                @if (isInitialized || solutionReady)
+                {
 
-    <div class="solver-controls">
-        <p>Input the number of queens to place</p>
-        <p>Maximum number of queens is 8</p>
-        <input id="queenNumInput" type="text" @bind="queenNumInput" />
-        <input id="btn_Solve" class="solve-btn" type="button" value="Solve!" @onclick="@(() => StartSolving())" />
-        <div class="error">
-            <p>@(errorMessage)</p>
+
+                    for (int i = 0; i < solver.m_Rows.Length; i++)
+                    {
+                        for (int j = 0; j < solver.m_Columns.Length; j++)
+                        {
+                            if (solver.m_Columns[j] == i)
+                            {
+
+                                <div class="puzzle-element">Q</div>
+
+                            }
+                            else
+                            {
+                                <div>
+                                    <div class="puzzle-element">-</div>
+                                </div>
+                            }
+                        }
+                    }
+                }
+            </div>
         </div>
-
     </div>
+    
+     <div class="solver-controls">
+            <p>Input the number of queens to place</p>
+            <p>Maximum number of queens is 8</p>
+            <input id="queenNumInput" type="text" @bind="queenNumInput" />
+            <input id="btn_Solve" class="solve-btn" type="button" value="Solve!" @onclick="@(() => StartSolving())" />
+            <div class="error">
+                <p>@(errorMessage)</p>
+            </div>
 
+        </div>
 </div>
 
 @code {

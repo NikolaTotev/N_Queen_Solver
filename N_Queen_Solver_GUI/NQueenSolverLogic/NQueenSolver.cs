@@ -10,6 +10,7 @@ namespace N_Queen_Solver_GUI.NQueenSloverLogic
     {
         private int m_QueenNum = 0;
         public int[] m_Columns;
+        public int[] m_ColumnsBefore;
         public int[] m_Rows;
         private int[] m_MainDiagonal;
         private int[] m_SecondaryDiagonal;
@@ -28,6 +29,7 @@ namespace N_Queen_Solver_GUI.NQueenSloverLogic
             m_Debug = debug;
             int diagCount = (queenNum * 2) + 1;
             m_Columns = new int[queenNum];
+            m_ColumnsBefore = new int[queenNum];
             m_Rows = new int[queenNum];
             m_MainDiagonal = new int[diagCount];
             m_SecondaryDiagonal = new int[diagCount];
@@ -112,6 +114,7 @@ namespace N_Queen_Solver_GUI.NQueenSloverLogic
             {
                 int row = FindMinConflictPosition(numberOfPlacedQueens, -1, i);
                 m_Columns[i] = row;
+                m_ColumnsBefore[i] = row;
                 AddQueenToRow(row);
                 AddQueenToMainDiagonal(row, i);
                 AddQueenToSecondaryDiagonal(row, i);
