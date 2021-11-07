@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "N_Queen_Solver_GUI", "N_Queen_Solver_GUI.csproj", "{283B4F2D-993B-4FF3-B521-F06D9F7022F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "N_Queen_Solver_GUI", "N_Queen_Solver_GUI.csproj", "{283B4F2D-993B-4FF3-B521-F06D9F7022F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

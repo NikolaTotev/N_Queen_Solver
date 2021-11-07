@@ -23,7 +23,10 @@ namespace N_Queen_CLI
                 if (queenNum == 10000)
                 {
                     solver.Initialize(mode: NQueenSolver.InitMode.Horse);
-                    solver.Solve();
+                    if (solver.Solve()==-1)
+                    {
+                        Console.WriteLine("Failed to solve within 20 seconds.");
+                    }
                     if (drawFlag == "Y")
                     {
                         solver.PrintBoard();
@@ -33,6 +36,10 @@ namespace N_Queen_CLI
                 {
                     solver.Initialize(mode: NQueenSolver.InitMode.Min);
                     solver.Solve();
+                    if (solver.Solve() == -1)
+                    {
+                        Console.WriteLine("Failed to solve within 20 seconds.");
+                    }
                     if (drawFlag == "Y")
                     {
                         solver.PrintBoard();

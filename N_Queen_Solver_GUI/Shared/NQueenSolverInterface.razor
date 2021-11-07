@@ -1,0 +1,150 @@
+﻿@page "/nqueensolver"
+
+
+@using N_Queen_Solver_GUI.NQueenSloverLogic;
+
+<head>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+          rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Spicy+Rice&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
+</head>
+
+<h3>N Queen Solver</h3>
+
+<style>
+    .puzzle-grid {
+        display: grid;
+        row-gap: 5%;
+        column-gap: 1%;
+        grid-template-columns: repeat( @queenNum, minmax(0.5rem, 4rem));
+        grid-template-rows: repeat( @queenNum, minmax(0.5rem, 4rem));
+        justify-content: center;
+        margin-bottom: 5%;
+    }
+</style>
+
+<div class="root-grid">
+
+    <div class="puzzle-container">
+        <div class="puzzle-grid">
+
+            @if (isInitialized || solutionReady)
+            {
+
+
+                for (int i = 0; i < solver.m_Rows.Length; i++)
+                {
+                    for (int j = 0; j < solver.m_Columns.Length; j++)
+                    {
+                        if (solver.m_Columns[j] == i)
+                        {
+
+                            <div class="puzzle-element">Q</div>
+
+                        }
+                        else
+                        {
+                            <div>
+                                <div class="puzzle-element">-</div>
+                            </div>
+                        }
+                    }
+                    Console.WriteLine();
+                }
+            }
+        </div>
+
+    </div>
+
+    <div class="solver-controls">
+        <p>Input the number of queens to place</p>
+        <p>Maximum number of queens is 8</p>
+        <input id="queenNumInput" type="text" @bind="queenNumInput" />
+        <input id="btn_Solve" class="solve-btn" type="button" value="Solve!" @onclick="@(() => StartSolving())" />
+        <div class="error">
+            <p>@(errorMessage)</p>
+        </div>
+
+    </div>
+
+</div>
+
+@code {
+    string errorMessage;
+    string queenNumInput;
+    int errorCounter = 0;
+    private string customErrorMessage = "HEY! Stop trying to break my program! (ง'̀-'́)ง ";
+    bool solutionReady = false;
+    bool isInitialized = false;
+    bool isSolving = false;
+    NQueenSolver solver;
+    int queenNum = 0;
+
+    private async Task StartSolving()
+    {
+        solutionReady = false;
+        isInitialized = false;
+        StateHasChanged();
+        try
+        {
+            queenNum = int.Parse(queenNumInput);
+            if (queenNum <= 8 && queenNum >= 4)
+            {
+                solver = new NQueenSolver(queenNum, -1, false);
+
+
+                Task<bool> initTask = solver.Initialize(NQueenSolver.InitMode.Min);
+                isInitialized = await initTask;
+                StateHasChanged();
+
+                Task<bool> solverTask = solver.Solve();
+                solutionReady = await solverTask;
+                isSolving = !solverTask.IsCompleted;
+                errorCounter = 0;
+                StateHasChanged();
+            }
+            else
+            {
+                queenNum = 0;
+                errorMessage = "Invalid input!";
+            }
+
+
+        }
+        catch (FormatException)
+        {
+            errorMessage = "ಠ_ಠ You do know what numbers look like right?";
+            errorCounter++;
+            checkErrorCount();
+            StateHasChanged();
+            return;
+
+        }
+        catch (Exception)
+        {
+            errorMessage = "Whopsie, you gave my program a boo boo (◞‸◟)";
+            errorCounter++;
+            checkErrorCount();
+            StateHasChanged();
+            return;
+        }
+    }
+
+
+    void checkErrorCount()
+    {
+        if (errorCounter > 2)
+        {
+            errorMessage = customErrorMessage;
+        }
+    }
+}

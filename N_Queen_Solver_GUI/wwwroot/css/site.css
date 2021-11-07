@@ -48,3 +48,95 @@ a, .btn-link {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+h3 {
+    font-family: 'Spicy Rice', cursive;
+    font-size: 4rem;
+    color: #12005e;
+    animation-name: titleTextAnimation;
+    animation-duration: 42s;
+    animation-iteration-count: infinite;
+    text-align: center;
+}
+
+@keyframes titleTextAnimation {
+    0% {
+        color: #12005e;
+    }
+
+    25% {
+        color: #ab47bc;
+    }
+
+    50% {
+        color: #e1bee7;
+    }
+
+    75% {
+        color: #ab47bc;
+    }
+
+    100% {
+        color: #12005e;
+    }
+}
+
+
+.root-grid {
+    display: flex;
+    flex-wrap: wrap;
+    grid-template-columns: repeat(2, 20rem);
+    flex-direction: column;
+    row-gap: 2%;
+    column-gap: 5%;
+}
+
+.puzzle-container {
+    display: block;
+    height: 40%;
+    width: 40%;
+    flex-wrap: wrap;
+    align-self: center;
+    justify-content: center;
+    padding: 10px;
+    align-items: center;
+}
+
+.puzzle-element {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    display: flex;
+    height: 4em;
+    width: 4em;
+    padding: 0.5rem;
+    margin-bottom: 2%; /* (100-32*3)/2 */
+    justify-content: center;
+    align-items: center;
+    font-size: 1rem;
+    background: #f3e5f5;
+    color: #12005e;
+    border-radius: 0.1rem;
+}
+
+.solve-btn {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    color: #f3e5f5;
+    background-color: #12005e;
+    border-radius: 4px;
+    border: none;
+}
+
+.error {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    color: #ff1744;
+    font-size: 1rem;
+    width: 100%;
+    margin: 0;
+}
+
+.solver-controls {
+    text-align: left;
+    align-self: center;
+}
