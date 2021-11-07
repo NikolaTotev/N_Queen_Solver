@@ -20,6 +20,7 @@ namespace N_Queen_CLI
         private bool m_IsSolved = false;
         private int m_MaxSteps = 0;
         private bool m_Debug;
+        private TimeSpan totalTime = new TimeSpan();
         public NQueenSolver(int queenNum, int maxSteps, bool debug)
         {
 
@@ -78,11 +79,37 @@ namespace N_Queen_CLI
 
         }
 
-        public void MinConflictSetup()
+        public enum InitMode { Min, Horse, Rand }
+        public void Initialize(InitMode mode)
         {
+            Console.WriteLine("Starting initalization.");
+            Stopwatch sw = new Stopwatch();
+            Console.WriteLine("Starting init stopwatch.");
+            sw.Start();
+            switch (mode)
+            {
+                case InitMode.Min:
+
+                    MinConflictSetup();
+                    break;
+                case InitMode.Horse:
+                    HorsePatternSetup();
+                    break;
+                case InitMode.Rand:
+                    RandomSetup();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
+            }
+            Console.WriteLine($"Init time:{sw.Elapsed}");
+            totalTime += sw.Elapsed;
+        }
+        private void MinConflictSetup()
+        {
+
             int numberOfPlacedQueens = 0;
-    
-            for (int i = 0; i < m_Columns.Length - 1; i++)
+
+            for (int i = 0; i < m_Columns.Length; i++)
             {
                 int row = FindMinConflictPosition(numberOfPlacedQueens, -1, i);
                 m_Columns[i] = row;
@@ -93,7 +120,7 @@ namespace N_Queen_CLI
             }
         }
 
-        public void RandomSetup()
+        private void RandomSetup()
         {
             Random rand = new Random();
             for (int i = 0; i < m_Columns.Length - 1; i++)
@@ -123,37 +150,6 @@ namespace N_Queen_CLI
                 }
                 Console.WriteLine();
             }
-        }
-
-        public void PrintStats()
-        {
-            Console.WriteLine("Column Array Data:");
-            for (int i = 0; i < m_Columns.Length; i++)
-            {
-                Console.WriteLine($"{i}: {m_Columns[i]} ");
-            }
-            Console.WriteLine();
-
-            Console.WriteLine("Row Array Data:");
-            for (int i = 0; i < m_Rows.Length; i++)
-            {
-                Console.WriteLine($"{i}: {m_Rows[i]} ");
-            }
-            Console.WriteLine();
-
-            Console.WriteLine("Main Diagonal Array Data:");
-            for (int i = 0; i < m_MainDiagonal.Length; i++)
-            {
-                Console.WriteLine($"{i}: {m_MainDiagonal[i]} ");
-            }
-            Console.WriteLine();
-
-            Console.WriteLine("Secondary Diagonal Array Data:");
-            for (int i = 0; i < m_SecondaryDiagonal.Length; i++)
-            {
-                Console.WriteLine($"{i}: {m_SecondaryDiagonal[i]} ");
-            }
-            Console.WriteLine();
 
         }
 
@@ -177,6 +173,7 @@ namespace N_Queen_CLI
                 //Clear previous max conflict indexes.
                 maxIndexes.Clear();
 
+                ///From here
                 //Create a dictionary to hold <colIndex, conflict> pairs. This is used to sort queens by number of conflicts.
                 Dictionary<int, int> queenConflictPairs = new Dictionary<int, int>();
 
@@ -195,6 +192,7 @@ namespace N_Queen_CLI
                 //Extract the last value from the items variable, this should be the maximum number of conflicts
                 KeyValuePair<int, int> maxConflict = items.Last();
 
+
                 //Iterate through the items variable to check if there are any other indexes that have the same max number of conflicts
                 foreach (KeyValuePair<int, int> pair in items)
                 {
@@ -204,6 +202,8 @@ namespace N_Queen_CLI
                         maxIndexes.Add(pair.Key);
                     }
                 }
+                ///To here
+
 
                 int maxConflictQueen;
 
@@ -241,23 +241,7 @@ namespace N_Queen_CLI
                         MoveQueen(randQueen, newMinConflictRow);
                         m_TotalMoves += 1;
                     }
-
-                    //Assume that the queens satisfy the constraints and have 0 conflicts.
-                    m_IsSolved = true;
-
-                    //Iterate through all columns and check how many conflicts exist.
-                    for (int i = 0; i < m_Columns.Length; i++)
-                    {
-                        //The check uses the function CalculateExistingConflicts because we know that there will be at least one queen.
-                        int currentQueenConflictCount = CalculateExistingConflicts(m_Columns[i], i);
-
-                        //If any queen has a conflict the flag is set to false and the algorithm will start again from the top.
-                        if (currentQueenConflictCount > 0)
-                        {
-                            m_IsSolved = false;
-                        }
-                    }
-
+                    
                     if (sw.Elapsed.Seconds > 20)
                     {
                         return -1;
@@ -265,17 +249,6 @@ namespace N_Queen_CLI
                 }
 
                 m_IsSolved = queenConflict == 0;
-
-                if (m_Debug)
-                {
-                    PrintBoard();
-                    Console.WriteLine("====================================================================");
-                    Console.WriteLine($"Moved {randQueen} from {prevPosition} to {newRow} because it had {prevConflicts}");
-                    Console.WriteLine("====================================================================");
-                    Console.WriteLine("====================================================================");
-                    Thread.Sleep(1000); 
-                }
-
             }
 
             //Stop the stopwatch right after the algorithm has found a solution
@@ -283,7 +256,8 @@ namespace N_Queen_CLI
 
             //Print the stats for the solution.
             Console.WriteLine($"Number of moves required: {m_TotalMoves}");
-            Console.WriteLine($"Elapsed time:{sw.Elapsed}");
+            Console.WriteLine($"Solve time: {sw.Elapsed}");
+            Console.WriteLine($"Total time: {totalTime}");
             return 0;
         }
 
@@ -387,7 +361,7 @@ namespace N_Queen_CLI
             int newMinConflictPos = 0;
             //minConflictCount is set to the current number of conflicts as a base.
             int newMinConflictCount = currentConflictCount;
-
+            List<int> minRow = new List<int>();
             //Iterate through all of the rows in the current column.
             for (int i = 0; i < m_Rows.Length; i++)
             {
@@ -407,26 +381,27 @@ namespace N_Queen_CLI
                 }
 
                 //If the conflicts at current position is smaller than or equal to the current minimum, update the mimimum.
-                if (posConflicts <= newMinConflictCount)
+                if (posConflicts < newMinConflictCount)
                 {
                     newMinConflictCount = posConflicts;
-                    //Update the row only if the row is different from the row on which the queen is.
-                    //This is to avoid the situation where the queen doesn't move even though there are valid moves that might lead to a solution.
-                    if (i != currentRow)
-                    {
-                        newMinConflictPos = i;
-                    }
+                    minRow.Clear();
                 }
-
-                //If the new minimum is zero, stop the loop because there can't be a smaller value than 0.
-                if (newMinConflictCount == 0)
+                if (posConflicts == newMinConflictCount)
                 {
-                    break;
+                    minRow.Add(i);
+
                 }
             }
 
-            //Return the position.
-            return newMinConflictPos;
+            Random rand = new Random();
+
+            if (minRow.Count > 0)
+            {
+                return minRow[rand.Next(0, minRow.Count)];
+            }
+
+            return minRow[0];
+
         }
 
         public void MoveQueen(int columnIndex, int newRow)
